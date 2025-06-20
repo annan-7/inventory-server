@@ -1,5 +1,7 @@
-const express = require('express');
-const cors = require('cors');
+
+import cors from "cors";
+import express from "express"
+import { User } from "./controllers/userControllers";
 
 const app = express();
 app.use(cors());
@@ -13,3 +15,5 @@ const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+app.post('/api/user', User);

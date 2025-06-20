@@ -2,7 +2,7 @@ import db from '../db/db-connection.js';
 import asyncHandler from '../middleware/asyncHandler.js';
 import ApiResponse from "../utils/apiResponse.js";
 import ApiError from "../utils/apiError.js";
-const User = asyncHandler( async (req, res)=>{
+export const User = asyncHandler( async (req, res)=>{
     const { username, password, email } = req.body;
     if( !(username || password || email) ){
         return new ApiError(400, "Username, password and email are required");

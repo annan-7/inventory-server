@@ -27,17 +27,37 @@ export const db = new sqlite3.Database(getDbPath(), (err) => {
   }
 });
 
-function initializeDatabase() {
+function initializeDatabase()  {
+  // Create products table
   db.run(`
-    CREATE TABLE IF NOT EXISTS items (
+    CREATE TABLE IF NOT EXISTS products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
-      quantity INTEGER DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      quantity INTEGER NOT NULL DEFAULT 0,
+      price REAL NOT NULL,
+      category TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `, (err) => {
-    if (err) console.error('Table creation error:', err);
-    else console.log('Items table ready');
+    if (err) console.error('Products table error:', err);
+    else console.log('Products table ready');
   });
+
+  // Create indexes
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_products_name 
+    ON products (name COLLATE NOCASE)
+  `);
+  
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_products_price 
+    ON products (price)
+  `);
+  
+  db.run(`
+    CREATE INDEX IF NOT EXISTS idx_products_category 
+    ON products (category)
+  `);
 }
 

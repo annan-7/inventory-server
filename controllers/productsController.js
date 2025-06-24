@@ -1,4 +1,5 @@
-import { db } from "../db/db-connection";
+import db from "../db/db-connection.js";
+
 // Create new product
 const createProduct = (req, res) => {
   const { name, quantity, price, category } = req.body;
@@ -114,6 +115,24 @@ const getProducts = (req, res) => {
   });
 };
 
+// Get single product
+const getProduct = (req, res) => {
+  const { id } = req.params;
+  
+  db.get('SELECT * FROM products WHERE id = ?', [id], (err, row) => {
+    if (err) {
+      console.error('Query error:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    
+    if (!row) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+    
+    res.json(row);
+  });
+};
+
 // Update product
 const updateProduct = (req, res) => {
   const { id } = req.params;
@@ -167,9 +186,24 @@ const deleteProduct = (req, res) => {
   });
 };
 
-exports = {
+// Get categories
+const getCategories = (req, res) => {
+  db.all('SELECT DISTINCT category FROM products WHERE category IS NOT NULL AND category != ""', (err, rows) => {
+    if (err) {
+      console.error('Categories query error:', err);
+      return res.status(500).json({ error: 'Failed to fetch categories' });
+    }
+    
+    const categories = rows.map(row => row.category);
+    res.json(categories);
+  });
+};
+
+export {
   createProduct,
   getProducts,
+  getProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  getCategories
 };

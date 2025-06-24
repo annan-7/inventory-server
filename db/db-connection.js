@@ -1,6 +1,9 @@
 import sqlite3 from 'sqlite3';
 import path from 'path';
-import { open } from 'sqlite';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Determine DB path based on environment
 const getDbPath = () => {
@@ -8,17 +11,11 @@ const getDbPath = () => {
     return path.join(__dirname, 'database.db');
   }
   
-  // In production (packaged Electron app)
-  if (process.env.ELECTRON_RUNNING) {
-    const userDataPath = require('electron').app.getPath('userData');
-    return path.join(userDataPath, 'app-database.db');
-  }
-  
-  // Fallback for non-Electron production
-  return path.join(process.resourcesPath, 'database.db');
+  // Fallback for production
+  return path.join(process.cwd(), 'database.db');
 };
 
-export const db = new sqlite3.Database(getDbPath(), (err) => {
+const db = new sqlite3.Database(getDbPath(), (err) => {
   if (err) {
     console.error('Database connection error:', err.message);
   } else {
@@ -27,7 +24,21 @@ export const db = new sqlite3.Database(getDbPath(), (err) => {
   }
 });
 
-function initializeDatabase()  {
+function initializeDatabase() {
+  // Create users table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `, (err) => {
+    if (err) console.error('Users table error:', err);
+    else console.log('Users table ready');
+  });
+
   // Create products table
   db.run(`
     CREATE TABLE IF NOT EXISTS products (
@@ -60,4 +71,6 @@ function initializeDatabase()  {
     ON products (category)
   `);
 }
+
+export default db;
 
